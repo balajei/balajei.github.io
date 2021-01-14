@@ -25,7 +25,8 @@
     
     How to use ?
     -------------
-    1. Just load the vnotes.html in any browser.
+    1. Just download vnotes.html and load it in any browser 
+       or use this url to load - http://htmlpreview.github.io/?https://github.com/balajei/vnotes/blob/main/vnotes.html
     2. Provide the youtube video url for which notes to be taken in url text and press go.
     3. Video will get loaded and user can simply take notes for the video and save it.
     
