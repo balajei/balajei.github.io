@@ -30,8 +30,7 @@
 <head>
   <meta content='uft-8' name='charset'>
   </meta>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora">
-  <link rel="stylesheet" href="jquery.cleditor.css" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora">  
   <title>Video Notes</title>
 </head>
 
@@ -71,7 +70,7 @@
       <input type="checkbox" id="insertTimings" checked>
       <span class="slider round"></span>
     </label>
-    &nbsp;&nbsp;&nbsp;&nbsp; ⌨ <b> ctrl+alt+z to play</b>
+    &nbsp;&nbsp;&nbsp;&nbsp; ⌨ <b> ctrl+alt+z to play/pause</b>
   </div>
 
   <!-- Script area which handles all action related to video and button clicks -->
@@ -109,14 +108,12 @@
     */
     function prcoessVideoURL() {
       youtubeUrl = $('#youtubeUrl').val();
-      finalUrl = getId(youtubeUrl);
-      iframeUrl = '<iframe width="560" height="500" src="//www.youtube.com/embed/' + finalUrl +
-        '?enablejsapi=1" frameborder="0" allowfullscreen></iframe>';
+      finalUrl = getId(youtubeUrl);     
       console.log(finalUrl);
       $('#finalUrl').html(finalUrl);
       $('#videoplayer').html(
         '<iframe id="existing-iframe-example" width="900" height="400" src="https://www.youtube.com/embed/' +
-        finalUrl + '?enablejsapi=1&showinfo=0&rel=0&autoplay=1&loop=1&playlist=W0LHTWG-UmQ&mute=1" frameborder="0"></iframe>');
+        finalUrl + '?enablejsapi=1" frameborder="0" allowfullscreen></iframe>');
       initPlayer();
       var notes = document.querySelector('#notes');
       notes.value = '';
@@ -175,8 +172,13 @@
     function pauseVideo() {
       if (document.querySelector('#pauseVideo').checked) {
         player.pauseVideo();
-        if (document.querySelector('#insertTimings').checked)
-          notes.value = notes.value + '\n' + getYoutubeLikeToDisplay(player.playerInfo.currentTime) + ' - ';
+        if (document.querySelector('#insertTimings').checked) {          
+          if (player.getPlayerState() == 2) {
+            return
+          } else {
+            notes.value = notes.value + '\n' + getYoutubeLikeToDisplay(player.playerInfo.currentTime) + ' - ';
+          }
+        }
       }
     }
 
@@ -202,7 +204,10 @@
     // keydown event handler used to play video
     document.addEventListener("keydown", function (zEvent) {
       if (zEvent.ctrlKey && zEvent.altKey && zEvent.key === "z") {  // case sensitive
-        player.playVideo();
+        if (player.getPlayerState() == 2)
+          player.playVideo();
+        else  
+          player.pauseVideo();
       }
     });
 
