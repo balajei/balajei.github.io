@@ -1,0 +1,561 @@
+<!--
+    This is a simple html file which helps user to take notes while listening to 
+    youtube video without any distraction and hassle free switching between 
+    youtube video and notepad/onenotes apps etc.
+
+    Why this Page ?
+    * It helps to take notes for video within same page using textarea and copy 
+    the notes from textarea once done with the video.
+    * To make the things simple whenever user clicks the textarea the video will 
+    get paused, so that user can pour is information on notes and clicking the 
+    video again will start playing the video. 
+
+    Notes: Since i am a novice UI developer i may mixed the frames, actions players etc, 
+    but the main intention i want to get here is to have simple page to play video and 
+    take notes and hope it will be useful for school kids, all engg, academics etc. 
+    So please bear with me on my code.
+    Anyone can freely improve the script so that we all can benefit from it :)
+
+    Thanks: To everyone providing details in stackoverflow and and many other open source 
+    sites from which i used to study/utilize some JS codes to build this small utility.
+
+    Dedicated To: This utility is dedicated to all open source community, wikipedia etc for
+    their dedication to help all.
+
+    Author: human being from earth with "NO" UI experience :(
+-->
+
+<html>
+
+<head>
+  <meta content='uft-8' name='charset'>
+  </meta>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lora">
+  <link rel="stylesheet" href="jquery.cleditor.css" />
+  <title>Video Notes</title>
+</head>
+
+<body>
+  <h1 style="text-align: center;">V Notes</h1>
+
+  <div class="urlBox">
+    <input id="youtubeUrl" class="urlTextBox" type="email" placeholder="url">
+    <span onclick="prcoessVideoURL()">go</span>
+  </div>
+
+  <!-- iframe which load the youtube player for the given url -->
+  <div class="videocontainer">
+    <pre id="videoplayer"></pre>
+  </div>
+
+  <!-- textarea where user can input the notes for the video -->
+  <div>
+    <h4>Notes</h4>
+    <textarea id="notes" name="notes" rows="10" cols="105" onclick="pauseVideo()"> </textarea>
+  </div>
+
+  <!-- Buttons -->
+  <br>
+  &nbsp;&nbsp;
+  <div>
+    <input type="file" id="fileToLoad" accept=".txt">
+    <button class="blue" style="margin-right: 15px" id="loadNotes">Load Notes</button>
+    <button class="blue" style="margin-right: 15px" id="saveNotes">Save</button>
+    <button class="blue" style="margin-right: 15px" id="copyNotesButton">Copy Notes</button>
+    <space></space>
+    &nbsp;&nbsp; Pause Video <label class="switch">
+      <input type="checkbox" id="pauseVideo" checked>
+      <span class="slider round"></span>
+    </label>
+    &nbsp;&nbsp; Insert Timings <label class="switch">
+      <input type="checkbox" id="insertTimings" checked>
+      <span class="slider round"></span>
+    </label>
+    &nbsp;&nbsp;&nbsp;&nbsp; ⌨ <b> ctrl+alt+z to play</b>
+  </div>
+
+  <!-- Script area which handles all action related to video and button clicks -->
+  <script src='http://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.2.1.js'> </script>
+  <script type="text/javascript">
+
+    var finalUrl;
+    var player;
+    var youtubeUrl
+
+    // Initialize iframe player API
+    var tag = document.createElement('script');
+    tag.id = 'iframe-demo';
+    tag.src = 'https://www.youtube.com/iframe_api';
+    var firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+    // function which translates the given youtube url to embed one to load in iframe.
+    function getId(url) {
+      var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      var match = url.match(regExp);
+
+      if (match && match[2].length == 11) {
+        return match[2];
+      } else {
+        return 'error';
+      }
+    }
+
+    /*
+      "Go" Button click action
+       > Construct the iframe tag with embed video url.
+       > Initialize the youtube player with video.
+       > Clear the textarea for new video loaded.         
+    */
+    function prcoessVideoURL() {
+      youtubeUrl = $('#youtubeUrl').val();
+      finalUrl = getId(youtubeUrl);
+      iframeUrl = '<iframe width="560" height="500" src="//www.youtube.com/embed/' + finalUrl +
+        '?enablejsapi=1" frameborder="0" allowfullscreen></iframe>';
+      console.log(finalUrl);
+      $('#finalUrl').html(finalUrl);
+      $('#videoplayer').html(
+        '<iframe id="existing-iframe-example" width="900" height="400" src="https://www.youtube.com/embed/' +
+        finalUrl + '?enablejsapi=1&showinfo=0&rel=0&autoplay=1&loop=1&playlist=W0LHTWG-UmQ&mute=1" frameborder="0"></iframe>');
+      initPlayer();
+      var notes = document.querySelector('#notes');
+      notes.value = '';
+    }
+
+    /*
+      "Copy Notes" Button click action
+      > Copy the complete text inputed by user in the Notes textarea to clipboard.
+    */
+    $("#copyNotesButton").click(function () {
+      $("#notes").select();
+      document.execCommand('copy');
+    });
+
+    // Initialize youtube player
+    function initPlayer() {
+      var tag = document.createElement('script');
+      tag.src = "https://www.youtube.com/iframe_api";
+      var firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+      onYouTubeIframeAPIReady();
+      var notes = document.querySelector('#notes');
+      notes.value = '';
+    }
+
+    // Creates a youtube player with embed video
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('existing-iframe-example', {
+        height: '390',
+        width: '640',
+        videoId: finalUrl,
+        rel: '0',
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    }
+
+    // Play the video when the video is loaded
+    function onPlayerReady(event) {
+      notes.value = notes.value + '\n' + "Notes for Video: " + youtubeUrl;
+      event.target.playVideo();
+    }
+
+    // StateChange function for future purpose
+    function onPlayerStateChange(event) {
+    }
+
+    // Stop the video playing
+    function stopVideo() {
+      player.stopVideo();
+    }
+
+    // Pause the video playing
+    function pauseVideo() {
+      if (document.querySelector('#pauseVideo').checked) {
+        player.pauseVideo();
+        if (document.querySelector('#insertTimings').checked)
+          notes.value = notes.value + '\n' + getYoutubeLikeToDisplay(player.playerInfo.currentTime) + ' - ';
+      }
+    }
+
+    // Function converts the video paused seconds to h:m:s format
+    function getYoutubeLikeToDisplay(seconds) {
+      //var seconds = (millisec / 1000).toFixed(0);
+      var minutes = Math.floor(seconds / 60);
+      var hours = "";
+      if (minutes > 59) {
+        hours = Math.floor(minutes / 60);
+        hours = (hours >= 10) ? hours : "0" + hours;
+        minutes = minutes - (hours * 60);
+        minutes = (minutes >= 10) ? minutes : "0" + minutes;
+      }
+      seconds = Math.floor(seconds % 60);
+      seconds = (seconds >= 10) ? seconds : "0" + seconds;
+      if (hours != "") {
+        return hours + ":" + minutes + ":" + seconds;
+      }
+      return minutes + ":" + seconds;
+    }
+
+    // keydown event handler used to play video
+    document.addEventListener("keydown", function (zEvent) {
+      if (zEvent.ctrlKey && zEvent.altKey && zEvent.key === "z") {  // case sensitive
+        player.playVideo();
+      }
+    });
+
+    $("#saveNotes").click(function () {
+      saveNotes();
+    });
+
+    // Function which is used to save the user keyed notes to text file.
+    function saveNotes() {
+      var text = document.getElementById("notes").value;
+      text = text.replace(/\n/g, "\r\n"); 
+      var blob = new Blob([text], { type: "text/plain" });
+      var anchor = document.createElement("a");
+      anchor.download = "youtube-notes.txt";
+      anchor.href = window.URL.createObjectURL(blob);
+      anchor.target = "_blank";
+      anchor.style.display = "none";
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+    }
+
+    // Load existing user notes to the video loaded.
+    document.getElementById('loadNotes').onclick = function () {
+      if ('FileReader' in window) {
+        document.getElementById('fileToLoad').click();
+      } else {
+        alert('Your browser does not support the HTML5 FileReader.');
+      }
+    };
+
+    document.getElementById('fileToLoad').onchange = function (event) {
+      var fileToLoad = event.target.files[0];
+
+      if (fileToLoad) {
+        var reader = new FileReader();
+        reader.onload = function (fileLoadedEvent) {
+          var textFromFileLoaded = fileLoadedEvent.target.result;
+          document.getElementById('notes').value = textFromFileLoaded;
+        };
+        reader.readAsText(fileToLoad, 'UTF-8');
+      }
+    };
+
+  </script>
+
+<!-- All style related stuff goes here -->
+  <style>
+    h1 {
+      font-family: "Lora";
+      font-size: 24px;
+    }
+
+    body {
+      font-family: "Lora";
+      font-size: 14px;
+      background-image: linear-gradient(109.6deg, rgba(121, 203, 202, 1) 11.2%, rgba(119, 161, 211, 1) 91.1%);
+    }
+
+    textarea {
+      font-family: "Lora";
+      font-size: 14px;
+      font-weight: 300;
+      background-color: #fefeff;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 22px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 15px;
+      width: 15px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      -webkit-transition: .4s;
+      transition: .4s;
+    }
+
+    input:checked+.slider {
+      background-color: #2196F3;
+    }
+
+    input:focus+.slider {
+      box-shadow: 0 0 1px #2196F3;
+    }
+
+    input:checked+.slider:before {
+      -webkit-transform: translateX(20px);
+      -ms-transform: translateX(20px);
+      transform: translateX(20px);
+    }
+
+    /* Rounded sliders */
+    .slider.round {
+      border-radius: 20px;
+    }
+
+    .slider.round:before {
+      border-radius: 50%;
+    }
+
+    .ytp-pause-overlay {
+      display: none;
+    }
+
+    #exampleTextarea {
+      display: block;
+      width: 99%;
+    }
+
+    #fileToLoad {
+      display: none;
+    }
+
+    button {
+      color: #444444;
+      background: #F3F3F3;
+      border: 1px #DADADA solid;
+      padding: 5px 10px;
+      border-radius: 2px;
+      font-weight: bold;
+      font-size: 9pt;
+      outline: none;
+    }
+
+    button:hover {
+      border: 1px #C6C6C6 solid;
+      box-shadow: 1px 1px 1px #EAEAEA;
+      color: #333333;
+      background: #F7F7F7;
+    }
+
+    button:active {
+      box-shadow: inset 1px 1px 1px #DFDFDF;
+    }
+
+    
+    button.blue {
+      color: white;
+      background: #4C8FFB;
+      border: 1px #3079ED solid;
+      box-shadow: inset 0 1px 0 #80B0FB;
+    }
+
+    button.blue:hover {
+      border: 1px #2F5BB7 solid;
+      box-shadow: 0 1px 1px #EAEAEA, inset 0 1px 0 #5A94F1;
+      background: #3F83F1;
+    }
+
+    button.blue:active {
+      box-shadow: inset 0 2px 5px #2370FE;
+    }
+
+    :root {
+      --input-color: #99a3ba;
+      --input-border: #cdd9ed;
+      --input-background: #fff;
+      --input-placeholder: #cbd1dc;
+      --input-border-focus: #275efe;
+      --group-color: var(--input-color);
+      --group-border: var(--input-border);
+      --group-background: #eef4ff;
+      --group-color-focus: #fff;
+      --group-border-focus: var(--input-border-focus);
+      --group-background-focus: #678efe;
+    }
+
+    .urlTextBox {
+      display: block;
+      /*width: 100%;*/
+      padding: 2px 4px;
+      line-height: 25px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      border-radius: 6px;
+      -webkit-appearance: none;
+      color: var(--input-color);
+      border: 1px solid var(--input-border);
+      background: var(--input-background);
+      -webkit-transition: border 0.3s ease;
+      transition: border 0.3s ease;
+    }
+
+    .urlTextBox::-webkit-input-placeholder {
+      color: var(--input-placeholder);
+    }
+
+    .urlTextBox::-moz-placeholder {
+      color: var(--input-placeholder);
+    }
+
+    .urlTextBox:-ms-input-placeholder {
+      color: var(--input-placeholder);
+    }
+
+    .urlTextBox::-ms-input-placeholder {
+      color: var(--input-placeholder);
+    }
+
+    .urlTextBox::placeholder {
+      color: var(--input-placeholder);
+    }
+
+    .urlTextBox:focus {
+      outline: none;
+      border-color: var(--input-border-focus);
+    }
+
+    .urlBox {
+      position: relative;
+      display: -webkit-box;
+      display: flex;
+      width: 100%;
+    }
+
+    .urlBox>span,
+    .urlBox .urlTextBox {
+      white-space: nowrap;
+      display: block;
+    }
+
+    .urlBox>span:not(:first-child):not(:last-child),
+    .urlBox .urlTextBox:not(:first-child):not(:last-child) {
+      border-radius: 0;
+    }
+
+    .urlBox>span:first-child,
+    .urlBox .urlTextBox:first-child {
+      border-radius: 6px 0 0 6px;
+    }
+
+    .urlBox>span:last-child,
+    .urlBox .urlTextBox:last-child {
+      border-radius: 0 6px 6px 0;
+    }
+
+    .urlBox>span:not(:first-child),
+    .urlBox .urlTextBox:not(:first-child) {
+      margin-left: -1px;
+    }
+
+    .urlBox .urlTextBox {
+      position: relative;
+      z-index: 1;
+      -webkit-box-flex: 1;
+      flex: 1 1 auto;
+      width: 1%;
+      margin-top: 0;
+      margin-bottom: 0;
+    }
+
+    .urlBox>span {
+      text-align: center;
+      padding: 8px 12px;
+      font-size: 14px;
+      line-height: 25px;
+      color: var(--group-color);
+      background: var(--group-background);
+      border: 1px solid var(--group-border);
+      -webkit-transition: background 0.3s ease, border 0.3s ease, color 0.3s ease;
+      transition: background 0.3s ease, border 0.3s ease, color 0.3s ease;
+    }
+
+    .urlBox:focus-within>span {
+      color: var(--group-color-focus);
+      background: var(--group-background-focus);
+      border-color: var(--group-border-focus);
+    }
+
+    html {
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    * {
+      box-sizing: inherit;
+    }
+
+    *:before,
+    *:after {
+      box-sizing: inherit;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: "Mukta Malar", Arial;
+      display: -webkit-box;
+      display: flex;
+      -webkit-box-pack: center;
+      justify-content: center;
+      -webkit-box-align: center;
+      align-items: center;
+      -webkit-box-orient: vertical;
+      -webkit-box-direction: normal;
+      flex-direction: column;
+      background: linear-gradient(109.6deg, rgba(121, 203, 202, 1) 11.2%, rgba(119, 161, 211, 1) 91.1%);
+    }
+
+    body .urlBox {
+      max-width: 360px;
+    }
+
+    body .urlBox:not(:last-child) {
+      margin-bottom: 32px;
+    }
+
+    h1 {
+      color: #8d3091;
+      font-family: 'Rouge Script', cursive;
+      font-size: 50px;
+      font-weight: normal;
+      line-height: 48px;
+      margin: 0 0 50px;
+      text-align: center;
+      text-shadow: 1px 1px 2px #082b34;
+    }
+
+    h4 {
+      color: #e00e0e;
+      font-family: 'Oleo Script', cursive;
+      font-size: 20px;
+      font-weight: bold;
+      line-height: 24px;
+      margin: 0 0 18px;
+      text-shadow: 1px 0 0 rgb(15, 15, 15);
+    }
+  </style>
+</body>
+</html>
